@@ -1,0 +1,22 @@
+{
+  "name": "epds",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node --env-file=.env dist/index.js",
+    "test": "tsc && node --env-file=.env --test dist",
+    "migrate": "node --env-file=.env node_modules/.bin/node-pg-migrate"
+  },
+  "keywords": [],
+  "author": "kugichka",
+  "license": "WTFPL",
+  "description": "experimental pissychan database syncer",
+  "dependencies": {
+    "@types/node": "^20.14.2",
+    "@types/pg": "^8.11.6",
+    "axios": "^1.7.2",
+    "node-pg-migrate": "^7.4.0",
+    "pg": "^8.12.0",
+    "typescript": "^5.4.5"
+  }
+}
