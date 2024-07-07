@@ -7,8 +7,13 @@ import { sleep } from "./utils/sleep";
 const main = async () => {
   logger.info("Starting syncer...");
 
-  const { tick } = await create_update_tick(SCHEOBLE_API, process.env.DATABASE_URL || "");
+  const { tick, update_all } = await create_update_tick(SCHEOBLE_API, process.env.DATABASE_URL || "");
   let current_tick = 0;
+
+  logger.info('Before first tick we should fetch all!');
+  measure_time("fetch_all", "start");
+  await update_all();
+  logger.info(`Fetch ended with ${measure_time("fetch_all", "end")}ms`)
 
   while (true) {
     logger.info(`Start tick #${current_tick}`);
@@ -16,7 +21,7 @@ const main = async () => {
     await tick();
     const time_taken = measure_time("upd_tick", "end");
 
-    logger.info(`Update tick #${current_tick} complete with ${time_taken}ms`);
+    logger.info(`Update tick #${current_tick} completed with ${time_taken}ms`);
     logger.info(`Sleeping ${DELAY_AFTER_UPDATE_TICK}ms before next tick`);
     current_tick += 1;
     await sleep(DELAY_AFTER_UPDATE_TICK);

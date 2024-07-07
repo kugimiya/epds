@@ -1,7 +1,8 @@
 import { Client } from "pg";
 import { ResponseBoard } from "../types/ResponseBoardsList";
-import { TableBoards, TablePosts } from "../types/Tables";
+import { SettingType, TableBoards, TablePosts, TableSettings } from "../types/Tables";
 import { ResponsePost } from "../types/ResponseThreadsList";
+import { ResponseEvent } from "../types/ResponseEventsList";
 
 export const create_db_connection = async (database_url: string) => {
   const client = new Client({
@@ -11,6 +12,51 @@ export const create_db_connection = async (database_url: string) => {
   await client.connect();
 
   const close = () => client.end();
+
+  const settings = {
+    get: async (name: string) => {
+      const result = await client.query<TableSettings>({
+        text: "SELECT * FROM srvsettings WHERE name = $1",
+        values: [name],
+      });
+      const row = result.rows[0];
+
+      switch (row.type) {
+        case SettingType.Number:
+          return Number(row.value);
+
+        default:
+          return row.value;
+      }
+    },
+    set: async (name: string, value: string) => {
+      const result = await client.query<TableSettings>({
+        text: "UPDATE srvsettings set value=$1 WHERE name=$2 RETURNING *",
+        values: [value, name],
+      });
+
+      return result.rows[0];
+    }
+  };
+
+  const events = {
+    insert: async (event: ResponseEvent) => {
+      const result = await client.query<TableBoards>({
+        text: "INSERT INTO events(id, event_type, timestamp, post_id, board_id) VALUES($1, $2, $3, $4, $5) RETURNING *",
+        values: [event.id, event.event_type, event.timestamp, event.post_id, event.board_id],
+      });
+
+      return result.rows[0];
+    },
+    is_exist: async (event: ResponseEvent) => {
+      const result = await client.query<{ exists: boolean }>({
+        text: "SELECT EXISTS(SELECT 1 FROM events WHERE id = $1)",
+        values: [event.id],
+      });
+
+      return result.rows[0].exists;
+    },
+  }
 
   const boards = {
     insert: async (board: ResponseBoard) => {
@@ -125,5 +171,5 @@ export const create_db_connection = async (database_url: string) => {
     },
   };
 
-  return { close, boards, posts };
+  return { close, settings, events, boards, posts };
 };

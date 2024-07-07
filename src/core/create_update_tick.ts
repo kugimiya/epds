@@ -3,13 +3,14 @@ import { create_pissychan_service } from "../services/create_pissychan_service";
 import { logger } from "../utils/logger";
 import { get_full_threads } from "./get_full_threads";
 import { process_boards } from "./process_boards";
+import { process_events } from "./process_events";
 import { process_posts } from "./process_posts";
 
 export const create_update_tick = async (base_url: string, database_url: string) => {
   const pissychan_service = create_pissychan_service({ base_url });
   const db = await create_db_connection(database_url);
 
-  const tick = async () => {
+  const update_all = async () => {
     logger.info("Get all data...");
     const { full_threads, boards } = await get_full_threads(pissychan_service);
 
@@ -20,5 +21,17 @@ export const create_update_tick = async (base_url: string, database_url: string)
     await process_posts(full_threads, db);
   };
 
-  return { tick };
+  const tick = async () => {
+    const from_timestamp = await db.settings.get('current_timestamp') as number;
+
+    logger.info(`Fetch events, from_timestamp=${from_timestamp}...`);
+    const events = await pissychan_service.getEvents({ from_timestamp });
+
+    logger.info(`Found ${events.length} events`);
+    if (events.length) {
+      await process_events(events, db, pissychan_service);
+    }
+  };
+
+  return { update_all, tick };
 };

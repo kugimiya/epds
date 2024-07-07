@@ -15,3 +15,18 @@ export type TablePosts = {
   parent_id: number;
   is_verify: boolean;
 };
+
+export type TableSettings = {
+  id: number;
+  name: string;
+  value: string;
+  type: SettingType;
+};
+
+export enum SettingType {
+  Number = 0,
+  String = 1,
+  Boolean = 2,
+  DateString = 3,
+  DateTimestamp = 4
+};
