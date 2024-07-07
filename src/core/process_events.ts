@@ -27,7 +27,7 @@ export const process_events = async (
     if (event.post_id) {
       logger.debug(`TICK: Processing thread #${event.post_id}`);
       const thread = await pissychan_service.getThreadPostsList({ thread_id: event.post_id });
-      process_posts([thread], db);
+      await process_posts([thread], db);
     }
   }
 
