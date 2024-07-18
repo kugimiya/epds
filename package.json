@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc && node --env-file=.env dist/index.js",
+    "start:no-sync": "tsc && node --env-file=.env dist/index.js --no-sync",
     "test": "tsc && node --env-file=.env --test dist",
     "migrate": "node --env-file=.env node_modules/.bin/node-pg-migrate"
   },
@@ -15,6 +16,7 @@
     "@types/node": "^20.14.2",
     "@types/pg": "^8.11.6",
     "axios": "^1.7.2",
+    "fastify": "^4.28.1",
     "node-pg-migrate": "^7.4.0",
     "pg": "^8.12.0",
     "typescript": "^5.4.5"

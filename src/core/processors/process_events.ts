@@ -1,8 +1,8 @@
-import { create_db_connection } from "../services/create_db_connection";
-import { create_pissychan_service } from "../services/create_pissychan_service";
-import { ResponseEvent, ResponseEventType } from "../types/ResponseEventsList";
-import { logger } from "../utils/logger";
-import { measure_time } from "../utils/measure_time";
+import { create_db_connection } from "../../services/create_db_connection";
+import { create_pissychan_service } from "../../services/create_pissychan_service";
+import { ResponseEvent, ResponseEventType } from "../../types/ResponseEventsList";
+import { logger } from "../../utils/logger";
+import { measure_time } from "../../utils/measure_time";
 import { process_posts } from "./process_posts";
 
 export const process_events = async (
@@ -15,7 +15,7 @@ export const process_events = async (
 
   const thread_update_events = events
     // first, take all thread-trigger related events
-    .filter(event => event.event_type === ResponseEventType.ThreadUpdateTriggered)
+    .filter(event => event.event_type === ResponseEventType.ThreadUpdateTriggered || event.event_type === ResponseEventType.PostCreated)
     // than, take all unique
     .reduce((acc, cur) => {
       return acc.every((event) => event.post_id !== cur.post_id)
@@ -26,8 +26,10 @@ export const process_events = async (
   for (let event of thread_update_events) {
     if (event.post_id) {
       logger.debug(`TICK: Processing thread #${event.post_id}`);
-      const thread = await pissychan_service.getThreadPostsList({ thread_id: event.post_id });
-      await process_posts([thread], db);
+      try {
+        const thread = await pissychan_service.get_thread_posts_list({ thread_id: event.post_id });
+        await process_posts([thread], db);
+      } catch {}
     }
   }
 

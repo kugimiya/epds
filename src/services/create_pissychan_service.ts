@@ -15,26 +15,26 @@ export const create_pissychan_service = (params: CPS_Params) => {
     baseURL: params.base_url,
   });
 
-  const getBoardsList = async () => {
+  const get_boards_list = async () => {
     const response = await request.get<ApiTemplate<ResponseBoardsList>>("/v2/board?exclude_tags[]=", {
       params: { limit: FETCH_ENTITIES_FROM_API_BASE_LIMIT },
     });
     return response.data.payload.boards;
   };
 
-  const getThreadsList = async (params: { tag: string }) => {
+  const get_threads_list = async (params: { tag: string }) => {
     const response = await request.get<ApiTemplate<ResponseThreadsList>>(`/v2/board/${params.tag}`, {
       params: { limit: FETCH_ENTITIES_FROM_API_BASE_LIMIT },
     });
     return response.data.payload.posts;
   };
 
-  const getThreadPostsList = async (params: { thread_id: number }) => {
+  const get_thread_posts_list = async (params: { thread_id: number }) => {
     const response = await request.get<ApiTemplate<ResponseThreadPostsList>>(`/v2/post/${params.thread_id}`);
     return response.data.payload.thread_data;
   };
 
-  const getEvents = async (params: { from_timestamp: number }) => {
+  const get_events = async (params: { from_timestamp: number }) => {
     const response = await request.get<ApiTemplate<ResponseEventsList>>("/v2/events", {
       params: {
         from_timestamp: params.from_timestamp,
@@ -44,5 +44,5 @@ export const create_pissychan_service = (params: CPS_Params) => {
     return response.data.payload.posts;
   };
 
-  return { getBoardsList, getThreadsList, getThreadPostsList, getEvents };
+  return { get_boards_list, get_threads_list, get_thread_posts_list, get_events };
 };

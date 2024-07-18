@@ -11,7 +11,7 @@ export const get_full_threads = async (
   let total_posts_count = 0;
 
   logger.info("Fetch boards list...");
-  const boards = await pissychan_service.getBoardsList();
+  const boards = await pissychan_service.get_boards_list();
   logger.debug(`Fetched ${boards.length} boards`);
 
   if (skip_threads) {
@@ -28,7 +28,7 @@ export const get_full_threads = async (
     await parallel_executor<ResponsePost[], string>(
       board_tags,
       FETCH_ENTITIES_MAX_PARALLEL_JOBS,
-      (tag) => () => pissychan_service.getThreadsList({ tag }),
+      (tag) => () => pissychan_service.get_threads_list({ tag }),
     )
   ).flatMap((_) => _);
 
@@ -38,7 +38,7 @@ export const get_full_threads = async (
   const full_threads: ResponsePost[] = await parallel_executor(
     threads,
     FETCH_ENTITIES_MAX_PARALLEL_JOBS,
-    (thread) => () => pissychan_service.getThreadPostsList({ thread_id: thread.id }),
+    (thread) => () => pissychan_service.get_thread_posts_list({ thread_id: thread.id }),
   );
 
   full_threads.forEach((thread) => {

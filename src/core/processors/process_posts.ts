@@ -1,7 +1,7 @@
-import { create_db_connection } from "../services/create_db_connection";
-import { ResponsePost } from "../types/ResponseThreadsList";
-import { logger } from "../utils/logger";
-import { measure_time } from "../utils/measure_time";
+import { create_db_connection } from "../../services/create_db_connection";
+import { ResponsePost } from "../../types/ResponseThreadsList";
+import { logger } from "../../utils/logger";
+import { measure_time } from "../../utils/measure_time";
 
 export const process_posts = async (posts: ResponsePost[], db: Awaited<ReturnType<typeof create_db_connection>>) => {
   measure_time("db check posts", "start");
