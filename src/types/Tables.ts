@@ -23,6 +23,8 @@ export type TableSettings = {
   type: SettingType;
 };
 
+// fixme: add TableEvents
+
 export enum SettingType {
   Number = 0,
   String = 1,
