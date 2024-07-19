@@ -13,13 +13,13 @@ if (!process.env.DATABASE_URL) {
 const main = async () => {
   logger.info("Starting syncer...");
 
+  let current_tick = 0;
+  const { tick, update_all } = await create_update_tick(SCHEOBLE_API, process.env.DATABASE_URL || "");
   const { start_listen } = await create_api_server(
     Number(process.env.API_LISTEN_PORT) || API_DEFAULT_LISTEN_PORT,
     process.env.API_LISTEN_HOST || API_DEFAULT_LISTEN_HOST,
     process.env.DATABASE_URL || ""
   );
-  const { tick, update_all } = await create_update_tick(SCHEOBLE_API, process.env.DATABASE_URL || "");
-  let current_tick = 0;
 
   if (!process.argv.includes('--no-sync')) {
     logger.info('Before first tick we should fetch all!');

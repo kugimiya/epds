@@ -23,12 +23,25 @@ export type TableSettings = {
   type: SettingType;
 };
 
-// fixme: add TableEvents
-
 export enum SettingType {
   Number = 0,
   String = 1,
   Boolean = 2,
   DateString = 3,
   DateTimestamp = 4
+};
+
+export type TableEvents = {
+  id: number;
+  event_type: EventType;
+  timestamp: number;
+  post_id: number;
+  board_id: number;
+}
+
+export enum EventType {
+  PostCreated = 'PostCreated',
+  PostDeleted = 'PostDeleted',
+  BoardUpdateTriggered = 'BoardUpdateTriggered',
+  ThreadUpdateTriggered = 'ThreadUpdateTriggered',
 };

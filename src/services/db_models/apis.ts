@@ -26,12 +26,12 @@ export const db_model_apis = (client: Client) => {
         const board_id = board.id;
 
         const result = await client.query({
-          text: `
-          SELECT * FROM posts
-          WHERE board_id=$1 and parent_id is NULL
-          ORDER BY updated_at DESC
-          LIMIT $2 OFFSET $3
-        `,
+          text: [
+            "SELECT * FROM posts",
+            "WHERE board_id=$1 and parent_id is NULL",
+            "ORDER BY updated_at DESC",
+            "LIMIT $2 OFFSET $3",
+          ].join('\n'),
           values: [board_id, limit, offset],
         });
 
