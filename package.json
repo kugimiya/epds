@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc && node --env-file=.env dist/index.js",
-    "start:no-sync": "tsc && node --env-file=.env dist/index.js --no-sync",
+    "start:no-tick-sync": "tsc && node --env-file=.env dist/index.js --no-tick-sync",
+    "start:no-full-sync": "tsc && node --env-file=.env dist/index.js --no-full-sync",
     "test": "tsc && node --env-file=.env --test dist",
     "migrate": "node --env-file=.env node_modules/.bin/node-pg-migrate"
   },
