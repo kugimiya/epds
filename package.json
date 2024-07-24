@@ -12,7 +12,7 @@
   "keywords": [],
   "author": "kugichka",
   "license": "WTFPL",
-  "description": "experimental pissychan database syncer",
+  "description": "experimental pissykaka database syncer",
   "dependencies": {
     "@types/node": "^20.14.2",
     "@types/pg": "^8.11.6",

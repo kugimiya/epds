@@ -1,12 +1,33 @@
 import { create_api_server } from "./core/create_api_server";
 import { create_update_tick } from "./core/create_update_tick";
-import { API_DEFAULT_LISTEN_HOST, API_DEFAULT_LISTEN_PORT, DELAY_AFTER_UPDATE_TICK, SCHEOBLE_API } from "./utils/config";
+import {
+  API_DEFAULT_LISTEN_HOST,
+  API_DEFAULT_LISTEN_PORT,
+  DELAY_AFTER_UPDATE_TICK,
+  PISSYKAKA_API
+} from "./utils/config";
 import { logger } from "./utils/logger";
 import { measure_time } from "./utils/measure_time";
 import { sleep } from "./utils/sleep";
 
 if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL environment variable is required!');
+  process.exit(1);
+}
+
+if (process.argv.includes('--help')) {
+  console.log(process.env);
+  const help = [
+    `${process.env.npm_package_name}@${process.env.npm_package_version}`,
+    '',
+    'Usage:',
+    '',
+    'npm run start -- --no-tick-sync      disable all sync methods (full and event short-polling)',
+    'npm run start -- --no-full-sync      disable full sync',
+    '',
+    'For configuration look at .env.example file',
+  ];
+  console.log(help.join('\n'));
   process.exit(1);
 }
 
@@ -30,7 +51,7 @@ const main = async () => {
 
   // SYNC part
   let current_tick = 0;
-  const { tick, update_all } = await create_update_tick(SCHEOBLE_API, process.env.DATABASE_URL || "");
+  const { tick, update_all } = await create_update_tick(process.env.PISSYKAKA_API_URL || PISSYKAKA_API, process.env.DATABASE_URL || "");
 
   if (!NO_FULL_SYNC) {
     logger.info('Before first tick we should fetch all!');

@@ -1,5 +1,5 @@
 import { create_db_connection } from "../../services/create_db_connection";
-import { create_pissychan_service } from "../../services/create_pissychan_service";
+import { create_pissykaka_service } from "../../services/create_pissykaka_service";
 import { ResponseEvent, ResponseEventType } from "../../types/ResponseEventsList";
 import { logger } from "../../utils/logger";
 import { measure_time } from "../../utils/measure_time";
@@ -8,7 +8,7 @@ import { process_posts } from "./process_posts";
 export const process_events = async (
   events: ResponseEvent[],
   db: Awaited<ReturnType<typeof create_db_connection>>,
-  pissychan_service: ReturnType<typeof create_pissychan_service>
+  pissychan_service: ReturnType<typeof create_pissykaka_service>
 ) => {
   logger.info(`TICK: Start processing`);
   measure_time('tick_processing', 'start');

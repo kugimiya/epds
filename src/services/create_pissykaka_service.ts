@@ -10,7 +10,7 @@ export type CPS_Params = {
   base_url: string;
 };
 
-export const create_pissychan_service = (params: CPS_Params) => {
+export const create_pissykaka_service = (params: CPS_Params) => {
   const request = axios.create({
     baseURL: params.base_url,
   });

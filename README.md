@@ -52,6 +52,12 @@ Start
   npm run start
 ```
 
+Help
+
+```bash
+  npm run start -- --help
+```
+
 ## Development
 
 ### How to create migrations

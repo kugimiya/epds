@@ -1,11 +1,11 @@
-import { create_pissychan_service } from "../services/create_pissychan_service";
+import { create_pissykaka_service } from "../services/create_pissykaka_service";
 import { ResponsePost } from "../types/ResponseThreadsList";
 import { FETCH_ENTITIES_MAX_PARALLEL_JOBS } from "../utils/config";
 import { logger } from "../utils/logger";
 import { parallel_executor } from "../utils/parallel_executor";
 
 export const get_full_threads = async (
-  pissychan_service: ReturnType<typeof create_pissychan_service>,
+  pissychan_service: ReturnType<typeof create_pissykaka_service>,
   skip_threads = false,
 ) => {
   let total_posts_count = 0;
