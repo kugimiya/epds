@@ -1,9 +1,38 @@
-import { Client } from "pg";
+import { Client, QueryResult } from "pg";
 import { TableBoards, TablePosts } from "../../types/Tables";
 import { parallel_executor } from "../../utils/parallel_executor";
 import { DEFAULT_LIMIT, DEFAULT_THREAD_SIZE, FETCH_ENTITIES_MAX_PARALLEL_JOBS } from "../../utils/config";
 
+type ResultAsEntries = [number, TablePosts[]];
+
 export const db_model_apis = (client: Client) => {
+  const enrich_threads_with_replies = async (result: QueryResult<TablePosts>, moderated: boolean, thread_size: number) => {
+    const result_with_replies = await parallel_executor<ResultAsEntries, TablePosts>(
+      result.rows,
+      FETCH_ENTITIES_MAX_PARALLEL_JOBS,
+      thread => async () => {
+        const sub_result = await client.query<TablePosts>({
+          text: [
+            "SELECT posts.* FROM posts",
+            moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
+            `WHERE posts.parent_id=$1 ${moderated ? 'and moderated.post_id is NULL' : ''}`,
+            "ORDER BY posts.updated_at DESC",
+            "LIMIT $2 OFFSET 0",
+          ].join('\n'),
+          values: [thread.id, thread_size],
+        });
+
+        return [
+          thread.id,
+          sub_result.rows.reverse(),
+        ] as ResultAsEntries;
+      }
+    );
+
+    const result_normalized = Object.fromEntries(result_with_replies);
+    return result.rows.map((thread) => ({ ...thread, replies: result_normalized[thread.id] || [] }));
+  };
+
   const apis = {
     boards: {
       get_all: async (moderated: boolean) => {
@@ -35,7 +64,7 @@ export const db_model_apis = (client: Client) => {
         const board = await apis.boards.get_by_tag(moderated, tag);
         const board_id = board.id;
 
-        let result = await client.query<TablePosts>({
+        const result = await client.query<TablePosts>({
           text: [
             "SELECT posts.* FROM posts",
             moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
@@ -46,34 +75,24 @@ export const db_model_apis = (client: Client) => {
           values: [board_id, limit, offset],
         });
 
-        type ResultAsEntries = [number, TablePosts[]];
-        const result_with_replies = await parallel_executor<ResultAsEntries, TablePosts>(
-          result.rows,
-          FETCH_ENTITIES_MAX_PARALLEL_JOBS,
-          thread => async () => {
-            const sub_result = await client.query<TablePosts>({
-              text: [
-                "SELECT posts.* FROM posts",
-                moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
-                `WHERE posts.parent_id=$1 ${moderated ? 'and moderated.post_id is NULL' : ''}`,
-                "ORDER BY posts.updated_at DESC",
-                "LIMIT $2 OFFSET 0",
-              ].join('\n'),
-              values: [thread.id, thread_size],
-            });
-
-            return [
-              thread.id,
-              sub_result.rows.reverse(),
-            ] as ResultAsEntries;
-          }
-        );
-
-        const result_normalized = Object.fromEntries(result_with_replies);
-        const result_concatenated = result.rows.map((thread) => ({ ...thread, replies: result_normalized[thread.id] || [] }))
-
-        return result_concatenated;
+        return await enrich_threads_with_replies(result, moderated, thread_size);
       },
+    },
+    feed: {
+      get_all: async (moderated: boolean, offset = 0, limit = DEFAULT_LIMIT, thread_size = DEFAULT_THREAD_SIZE) => {
+        const result = await client.query<TablePosts>({
+          text: [
+            "SELECT posts.* FROM posts",
+            moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
+            `WHERE posts.parent_id is NULL ${moderated ? "and moderated.post_id is NULL" : ""}`,
+            "ORDER BY posts.updated_at DESC",
+            "LIMIT $1 OFFSET $2",
+          ].join('\n'),
+          values: [limit, offset],
+        });
+
+        return await enrich_threads_with_replies(result, moderated, thread_size);
+      }
     }
   };
 

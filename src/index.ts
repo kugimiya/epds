@@ -24,6 +24,7 @@ if (process.argv.includes('--help')) {
     '',
     'npm run start -- --no-tick-sync      disable all sync methods (full and event short-polling)',
     'npm run start -- --no-full-sync      disable full sync',
+    'npm run start -- --no-api-server     disable api server and mod-ui',
     '',
     'For configuration look at .env.example file',
   ];
@@ -33,6 +34,7 @@ if (process.argv.includes('--help')) {
 
 let NO_FULL_SYNC = process.argv.includes('--no-full-sync');
 let NO_TICK_SYNC = process.argv.includes('--no-tick-sync');
+let NO_API_SERVER = process.argv.includes('--no-api-server');
 
 if (NO_TICK_SYNC) {
   NO_FULL_SYNC = true;
@@ -42,12 +44,14 @@ const main = async () => {
   logger.info("Starting syncer and API...");
 
   // API part
-  const { start_listen } = await create_api_server(
-    Number(process.env.API_LISTEN_PORT) || API_DEFAULT_LISTEN_PORT,
-    process.env.API_LISTEN_HOST || API_DEFAULT_LISTEN_HOST,
-    process.env.DATABASE_URL || ""
-  );
-  start_listen();
+  if (!NO_API_SERVER) {
+    const { start_listen } = await create_api_server(
+      Number(process.env.API_LISTEN_PORT) || API_DEFAULT_LISTEN_PORT,
+      process.env.API_LISTEN_HOST || API_DEFAULT_LISTEN_HOST,
+      process.env.DATABASE_URL || ""
+    );
+    start_listen();
+  }
 
   // SYNC part
   let current_tick = 0;

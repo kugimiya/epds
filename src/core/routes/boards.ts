@@ -25,4 +25,15 @@ export const bind_boards_routes = (fastify: FastifyInstance, db: Awaited<ReturnT
     );
     reply.send(data);
   });
+
+  type ReqFeed = FastifyRequest<{ Querystring: { unmod?: string, offset?: string, limit?: string, thread_size?: string } }>;
+  fastify.get('/api/v1/feed', async (request: ReqFeed, reply) => {
+    const data = await db.apis.feed.get_all(
+      request.query.unmod !== 'true',
+      Number(request.query.offset) || undefined,
+      Number(request.query.limit) || undefined,
+      Number(request.query.thread_size) || undefined,
+    );
+    reply.send(data);
+  });
 };
