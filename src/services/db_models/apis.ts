@@ -15,7 +15,7 @@ export const db_model_apis = (client: Client) => {
           text: [
             "SELECT posts.* FROM posts",
             moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
-            `WHERE posts.parent_id=$1 ${moderated ? 'and moderated.post_id is NULL' : ''}`,
+            `WHERE posts.parent_id=$1 ${moderated ? 'and moderated.post_id is NULL or moderated.allowed is TRUE' : ''}`,
             "ORDER BY posts.updated_at DESC",
             "LIMIT $2 OFFSET 0",
           ].join('\n'),
@@ -40,7 +40,7 @@ export const db_model_apis = (client: Client) => {
           text: [
             "SELECT boards.* FROM boards",
             moderated ? "LEFT JOIN moderated ON moderated.board_id = boards.id" : "",
-            moderated ? "WHERE moderated.board_id is NULL" : "",
+            moderated ? "WHERE moderated.board_id is NULL or moderated.allowed is TRUE" : "",
           ].join('\n'),
         });
 
@@ -51,7 +51,7 @@ export const db_model_apis = (client: Client) => {
           text: [
             "SELECT boards.* FROM boards",
             moderated ? "LEFT JOIN moderated ON moderated.board_id = boards.id" : "",
-            `WHERE tag=$1 ${moderated ? "and moderated.board_id is NULL" : ""}`,
+            `WHERE tag=$1 ${moderated ? "and moderated.board_id is NULL or moderated.allowed is TRUE" : ""}`,
             ].join('\n'),
           values: [tag]
         });
@@ -68,7 +68,7 @@ export const db_model_apis = (client: Client) => {
           text: [
             "SELECT posts.* FROM posts",
             moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
-            `WHERE posts.board_id=$1 and posts.parent_id is NULL ${moderated ? 'and moderated.post_id is NULL' : ''}`,
+            `WHERE posts.board_id=$1 and posts.parent_id is NULL ${moderated ? 'and moderated.post_id is NULL or moderated.allowed is TRUE' : ''}`,
             "ORDER BY posts.updated_at DESC",
             "LIMIT $2 OFFSET $3",
           ].join('\n'),
@@ -84,7 +84,7 @@ export const db_model_apis = (client: Client) => {
           text: [
             "SELECT posts.* FROM posts",
             moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
-            `WHERE posts.parent_id is NULL ${moderated ? "and moderated.post_id is NULL" : ""}`,
+            `WHERE posts.parent_id is NULL ${moderated ? "and moderated.post_id is NULL or moderated.allowed is TRUE" : ""}`,
             "ORDER BY posts.updated_at DESC",
             "LIMIT $1 OFFSET $2",
           ].join('\n'),
@@ -93,7 +93,7 @@ export const db_model_apis = (client: Client) => {
 
         return await enrich_threads_with_replies(result, moderated, thread_size);
       }
-    }
+    },
   };
 
   return apis;

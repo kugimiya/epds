@@ -41,7 +41,7 @@ if (NO_TICK_SYNC) {
 }
 
 const main = async () => {
-  logger.info("Starting syncer and API...");
+  logger.info("Starting app...");
 
   // API part
   if (!NO_API_SERVER) {
