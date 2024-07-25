@@ -16,7 +16,6 @@ if (!process.env.DATABASE_URL) {
 }
 
 if (process.argv.includes('--help')) {
-  console.log(process.env);
   const help = [
     `${process.env.npm_package_name}@${process.env.npm_package_version}`,
     '',
@@ -46,8 +45,8 @@ const main = async () => {
   // API part
   if (!NO_API_SERVER) {
     const { start_listen } = await create_api_server(
-      Number(process.env.API_LISTEN_PORT) || API_DEFAULT_LISTEN_PORT,
-      process.env.API_LISTEN_HOST || API_DEFAULT_LISTEN_HOST,
+      API_DEFAULT_LISTEN_PORT,
+      API_DEFAULT_LISTEN_HOST,
       process.env.DATABASE_URL || ""
     );
     start_listen();
@@ -55,7 +54,7 @@ const main = async () => {
 
   // SYNC part
   let current_tick = 0;
-  const { tick, update_all } = await create_update_tick(process.env.PISSYKAKA_API_URL || PISSYKAKA_API, process.env.DATABASE_URL || "");
+  const { tick, update_all } = await create_update_tick(PISSYKAKA_API, process.env.DATABASE_URL || "");
 
   if (!NO_FULL_SYNC) {
     logger.info('Before first tick we should fetch all!');
