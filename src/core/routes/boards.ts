@@ -26,6 +26,15 @@ export const bind_boards_routes = (fastify: FastifyInstance, db: Awaited<ReturnT
     reply.send(data);
   });
 
+  type ReqThread = FastifyRequest<{ Querystring: { unmod?: string }, Params: { post_id: string } }>;
+  fastify.get('/api/v1/thread/:post_id', async (request: ReqThread, reply) => {
+    const data = await db.apis.threads.get_by_id(
+      request.query.unmod !== 'true',
+      Number(request.params.post_id)
+    );
+    reply.send(data);
+  });
+
   type ReqFeed = FastifyRequest<{ Querystring: { unmod?: string, offset?: string, limit?: string, thread_size?: string } }>;
   fastify.get('/api/v1/feed', async (request: ReqFeed, reply) => {
     const data = await db.apis.feed.get_all(

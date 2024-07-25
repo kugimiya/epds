@@ -1,6 +1,7 @@
 import { Client } from "pg";
 import { DEFAULT_LIMIT } from "../../utils/config";
 import { TablePosts } from "../../types/Tables";
+import { PostDto } from "../../core/dtos/PostDto/PostDto";
 
 export const db_model_apis_moderation = (client: Client) => ({
   get_un_moderated: async (offset = 0, limit = DEFAULT_LIMIT) => {
@@ -15,7 +16,7 @@ export const db_model_apis_moderation = (client: Client) => ({
       values: [limit, offset],
     });
 
-    return result.rows;
+    return result.rows.map((row) => new PostDto(row));
   },
   moderate: async (type: 'board' | 'post', id: number, allowed: boolean, reason?: string) => {
     const result = await client.query<{ exists: boolean }>({

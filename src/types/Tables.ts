@@ -7,12 +7,13 @@ export type TableBoards = {
 export type TablePosts = {
   id: number;
   board_id: number;
+  tag: string;
   poster: string;
   subject: string;
   message: string;
   timestamp: number;
   updated_at: number;
-  parent_id: number;
+  parent_id: number | null;
   is_verify: boolean;
 };
 
