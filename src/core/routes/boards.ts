@@ -5,25 +5,27 @@ export const bind_boards_routes = (fastify: FastifyInstance, db: Awaited<ReturnT
   type ReqBoardsList = FastifyRequest<{ Querystring: { unmod?: string } }>;
   fastify.get('/api/v1/boards', async (request: ReqBoardsList, reply) => {
     const boards = await db.apis.boards.get_all(request.query.unmod !== 'true');
-    reply.send(boards);
+    reply.send({ items: boards });
   });
 
   type ReqBoard = FastifyRequest<{ Querystring: { unmod?: string }, Params: { board_tag: string } }>;
   fastify.get('/api/v1/board/:board_tag', async (request: ReqBoard, reply) => {
-    const data = await db.apis.boards.get_by_tag(request.query.unmod !== 'true', request.params.board_tag);
-    reply.send(data);
+    const board = await db.apis.boards.get_by_tag(request.query.unmod !== 'true', request.params.board_tag);
+    reply.send({ item: board });
   });
 
   type ReqBoardThreads = FastifyRequest<{ Querystring: { unmod?: string, offset?: string, limit?: string, thread_size?: string }, Params: { board_tag: string } }>;
   fastify.get('/api/v1/board/:board_tag/threads', async (request: ReqBoardThreads, reply) => {
-    const data = await db.apis.threads.get_by_board_tag(
+    const threads = await db.apis.threads.get_by_board_tag(
       request.query.unmod !== 'true',
       request.params.board_tag,
       Number(request.query.offset) || undefined,
       Number(request.query.limit) || undefined,
       Number(request.query.thread_size) || undefined,
     );
-    reply.send(data);
+    const threads_count = await db.apis.threads.get_count_by_board_tag(request.query.unmod !== 'true', request.params.board_tag);
+
+    reply.send({ items: threads, count: threads_count });
   });
 
   type ReqThread = FastifyRequest<{ Querystring: { unmod?: string }, Params: { post_id: string } }>;
@@ -32,7 +34,7 @@ export const bind_boards_routes = (fastify: FastifyInstance, db: Awaited<ReturnT
       request.query.unmod !== 'true',
       Number(request.params.post_id)
     );
-    reply.send(data);
+    reply.send({ item: data });
   });
 
   type ReqFeed = FastifyRequest<{ Querystring: { unmod?: string, offset?: string, limit?: string, thread_size?: string } }>;
@@ -43,6 +45,8 @@ export const bind_boards_routes = (fastify: FastifyInstance, db: Awaited<ReturnT
       Number(request.query.limit) || undefined,
       Number(request.query.thread_size) || undefined,
     );
-    reply.send(data);
+    const threads_count = await db.apis.feed.get_count(request.query.unmod !== 'true');
+
+    reply.send({ items: data, count: threads_count });
   });
 };

@@ -94,6 +94,22 @@ export const db_model_apis = (client: Client) => {
 
         return await enrich_threads_with_replies(result, moderated, thread_size);
       },
+      get_count_by_board_tag: async (moderated: boolean, tag: string) => {
+        const board = await apis.boards.get_by_tag(moderated, tag);
+        const board_id = board.id;
+
+        const result = await client.query<{ count: number }>({
+          text: [
+            "SELECT COUNT(posts.*) FROM posts",
+            moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
+            "LEFT JOIN boards on boards.id = posts.board_id",
+            `WHERE posts.board_id=$1 and posts.parent_id is NULL ${moderated ? 'and moderated.post_id is NULL or moderated.allowed is TRUE' : ''}`,
+          ].join('\n'),
+          values: [board_id],
+        });
+
+        return result.rows[0];
+      },
       get_by_id: async (moderated: boolean, post_id: number) => {
         const result = await client.query<TablePosts>({
           text: [
@@ -126,6 +142,18 @@ export const db_model_apis = (client: Client) => {
         });
 
         return await enrich_threads_with_replies(result, moderated, thread_size);
+      },
+      get_count: async (moderated: boolean) => {
+        const result = await client.query<{ count: number }>({
+          text: [
+            "SELECT COUNT(posts.*) FROM posts",
+            moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
+            "LEFT JOIN boards on boards.id = posts.board_id",
+            `WHERE posts.parent_id is NULL ${moderated ? "and moderated.post_id is NULL or moderated.allowed is TRUE" : ""}`,
+          ].join('\n'),
+        });
+
+        return result.rows[0];
       }
     },
   };
