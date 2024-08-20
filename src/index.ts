@@ -67,15 +67,19 @@ const main = async () => {
 
   if (!NO_TICK_SYNC) {
     while (true) {
-      logger.info(`Start tick #${current_tick}`);
-      measure_time("upd_tick", "start");
-      await tick();
-      const time_taken = measure_time("upd_tick", "end");
+      try {
+        logger.info(`Start tick #${current_tick}`);
+        measure_time("upd_tick", "start");
+        await tick();
+        const time_taken = measure_time("upd_tick", "end");
 
-      logger.info(`Update tick #${current_tick} completed with ${time_taken}ms`);
-      logger.info(`Sleeping ${DELAY_AFTER_UPDATE_TICK}ms before next tick`);
-      current_tick += 1;
-      await sleep(DELAY_AFTER_UPDATE_TICK);
+        logger.info(`Update tick #${current_tick} completed with ${time_taken}ms`);
+        logger.info(`Sleeping ${DELAY_AFTER_UPDATE_TICK}ms before next tick`);
+        current_tick += 1;
+        await sleep(DELAY_AFTER_UPDATE_TICK);
+      } catch (e) {
+        logger.error(`Error at tick: ${e}`);
+      }
     }
   } else {
     logger.info('--no-sync or flag provided, skip sync tick');
