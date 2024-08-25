@@ -25,7 +25,7 @@ export const bind_boards_routes = (fastify: FastifyInstance, db: Awaited<ReturnT
     );
     const threads_count = await db.apis.threads.get_count_by_board_tag(request.query.unmod !== 'true', request.params.board_tag);
 
-    reply.send({ items: threads, count: threads_count });
+    reply.send({ items: threads, count: threads_count.count });
   });
 
   type ReqThread = FastifyRequest<{ Querystring: { unmod?: string }, Params: { post_id: string } }>;
@@ -47,6 +47,6 @@ export const bind_boards_routes = (fastify: FastifyInstance, db: Awaited<ReturnT
     );
     const threads_count = await db.apis.feed.get_count(request.query.unmod !== 'true');
 
-    reply.send({ items: data, count: threads_count });
+    reply.send({ items: data, count: threads_count.count });
   });
 };
