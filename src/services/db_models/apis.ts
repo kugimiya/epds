@@ -75,6 +75,22 @@ export const db_model_apis = (client: Client) => {
         return result.rows[0];
       }
     },
+    posts: {
+      get_by_id: async (moderated: boolean, post_id: number) => {
+        const result = await client.query<TablePosts>({
+          text: [
+            "SELECT posts.*, boards.tag FROM posts",
+            moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
+            "LEFT JOIN boards on boards.id = posts.board_id",
+            `WHERE posts.id=$1 ${moderated ? 'and moderated.post_id is NULL or moderated.allowed is TRUE' : ''}`,
+          ].join('\n'),
+          values: [post_id],
+        });
+
+        const post_dto = new PostDto(result.rows[0]);
+        return post_dto;
+      },
+    },
     threads: {
       get_by_board_tag: async (moderated: boolean, tag: string, offset = 0, limit = DEFAULT_LIMIT, thread_size = DEFAULT_THREAD_SIZE) => {
         const board = await apis.boards.get_by_tag(moderated, tag);

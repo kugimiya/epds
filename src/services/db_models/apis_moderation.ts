@@ -23,7 +23,7 @@ export const db_model_apis_moderation = (client: Client) => ({
       text: `SELECT EXISTS(SELECT 1 FROM moderated WHERE post_id = $1 or board_id = $1)`,
       values: [id],
     });
-    const is_exist= result.rows[0].exists;
+    const is_exist = result.rows[0].exists;
 
     if (is_exist) {
       // TODO: here we can update row
