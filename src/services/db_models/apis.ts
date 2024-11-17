@@ -151,7 +151,7 @@ export const db_model_apis = (client: Client) => {
             moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
             "LEFT JOIN boards on boards.id = posts.board_id",
             "LEFT JOIN moderated as moderated_board ON moderated_board.board_id = boards.id",
-            `WHERE posts.parent_id is NULL ${moderated ? "and moderated.post_id is NULL or moderated.allowed is TRUE" : ""} ${moderated ? "and moderated_board.board_id is NULL or moderated_board.allowed is TRUE" : ""}`,
+            `WHERE posts.parent_id is NULL ${moderated ? "and (moderated.post_id is NULL or moderated.allowed is TRUE)" : ""} ${moderated ? "and (moderated_board.board_id is NULL or moderated_board.allowed is TRUE)" : ""}`,
             "ORDER BY posts.updated_at DESC",
             "LIMIT $1 OFFSET $2",
           ].join('\n'),
