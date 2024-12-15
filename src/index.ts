@@ -42,19 +42,21 @@ if (NO_TICK_SYNC) {
 const main = async () => {
   logger.info("Starting app...");
 
+  // SYNC part
+  let current_tick = 0;
+  const tick_service = await create_update_tick(PISSYKAKA_API, process.env.DATABASE_URL || "");
+  const { tick, update_all } = tick_service;
+
   // API part
   if (!NO_API_SERVER) {
     const { start_listen } = await create_api_server(
       API_DEFAULT_LISTEN_PORT,
       API_DEFAULT_LISTEN_HOST,
-      process.env.DATABASE_URL || ""
+      process.env.DATABASE_URL || "",
+      tick_service,
     );
     start_listen();
   }
-
-  // SYNC part
-  let current_tick = 0;
-  const { tick, update_all } = await create_update_tick(PISSYKAKA_API, process.env.DATABASE_URL || "");
 
   if (!NO_FULL_SYNC) {
     logger.info('Before first tick we should fetch all!');

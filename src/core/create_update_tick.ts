@@ -6,6 +6,8 @@ import { process_boards } from "./processors/process_boards";
 import { process_events } from "./processors/process_events";
 import { process_posts } from "./processors/process_posts";
 
+export type CreateUpdateTickReturn = Awaited<ReturnType<typeof create_update_tick>>;
+
 export const create_update_tick = async (base_url: string, database_url: string) => {
   const pissykaka_service = create_pissykaka_service({ base_url });
   const db = await create_db_connection(database_url);
