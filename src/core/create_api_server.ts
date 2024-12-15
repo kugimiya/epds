@@ -10,6 +10,11 @@ export const create_api_server = async (listen_port: number, listen_host: string
   const fastify = create_fastify();
   fastify.register(fastify_cors);
 
+  fastify.setErrorHandler((error, request, reply) => {
+    console.error(error);
+    reply.status(500).send({ ok: false, error });
+  })
+
   bind_boards_routes(fastify, db);
   logger.info("Board routes binded");
 

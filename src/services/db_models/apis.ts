@@ -150,7 +150,7 @@ export const db_model_apis = (client: Client) => {
             "SELECT posts.*, boards.tag FROM posts",
             moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
             "LEFT JOIN boards on boards.id = posts.board_id",
-            moderated ? "LEFT JOIN moderated as moderated_board ON moderated_board.board_id = boards.id",
+            moderated ? "LEFT JOIN moderated as moderated_board ON moderated_board.board_id = boards.id" : "",
             `WHERE posts.parent_id is NULL `,
             moderated ? "and (moderated.post_id is NULL or moderated.allowed is TRUE)" : "",
             moderated ? "and (moderated_board.board_id is NULL or moderated_board.allowed is TRUE)" : "",
