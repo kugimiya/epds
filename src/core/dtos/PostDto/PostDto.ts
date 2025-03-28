@@ -1,7 +1,11 @@
-import { parse } from "@textlint/markdown-to-ast";
-import { TablePosts } from "../../../types/Tables";
-import { PostMedia } from "./types";
-import { find_pissykaka_images, find_youtube_links } from "./utils";
+import { MediaType, TableMedia, TablePosts } from "../../../types/Tables";
+import { PostMedia, PostMediaType } from "./types";
+
+const dbMediaType2DtoMediaType: Record<MediaType, PostMediaType> = {
+  [MediaType.Video]: PostMediaType.VIDEO,
+  [MediaType.YouTube]: PostMediaType.YOUTUBE,
+  [MediaType.Image]: PostMediaType.PISSYKAKA_IMAGE,
+};
 
 export class PostDto {
   public id: number;
@@ -16,7 +20,7 @@ export class PostDto {
   public replies?: PostDto[];
   public media?: PostMedia[];
 
-  constructor(db_post: TablePosts & { replies?: TablePosts[], replies_total?: number }) {
+  constructor(db_post: TablePosts & { replies?: TablePosts[], replies_total?: number, media?: TableMedia[] }) {
     this.id = db_post.id;
     this.board_tag = db_post.tag;
     this.poster = db_post.poster;
@@ -26,41 +30,14 @@ export class PostDto {
     this.created_at = db_post.timestamp;
     this.replies = db_post.replies?.map((reply) => new PostDto(reply));
     this.replies_total = db_post.replies_total;
+    this.media = (db_post.media ?? []).map((rawMedia) => ({
+      type: dbMediaType2DtoMediaType[rawMedia.media_type],
+      media_url: rawMedia.original_path,
+      preview_image_url: rawMedia.thumbnail_path,
+    }));
 
     if (db_post.parent_id) {
       this.parent_id = db_post.parent_id;
-    }
-
-    this.extract_media_from_message();
-  }
-
-  private extract_media_from_message() {
-    let trunked_post_message = '';
-    const skip_ranges: [start: number, end: number][] = [];
-    const ast = parse(this.post_message);
-
-    const pissykaka_images = find_pissykaka_images(ast);
-    const youtube_links = find_youtube_links(ast);
-
-    const all_medias = [...pissykaka_images, ...youtube_links];
-    if (all_medias) {
-      this.media = [];
-      all_medias.forEach((item) => {
-        this.media?.push(item[0]);
-        skip_ranges.push(item[1]);
-      });
-    }
-
-    if (skip_ranges) {
-      for (let i = 0; i < this.post_message.length; i++) {
-        // check, is i in any skip range?
-        const not_in_range = skip_ranges.every(([start, end]) => !(i >= start && i <= end));
-        if (not_in_range) {
-          trunked_post_message = `${trunked_post_message}${this.post_message[i]}`;
-        }
-      }
-
-      this.post_message = trunked_post_message.trim();
     }
   }
 }

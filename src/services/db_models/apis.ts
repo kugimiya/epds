@@ -1,5 +1,5 @@
 import { Client, QueryResult } from "pg";
-import { TableBoards, TablePosts } from "../../types/Tables";
+import { TableBoards, TableMedia, TablePosts } from "../../types/Tables";
 import { parallel_executor } from "../../utils/parallel_executor";
 import { DEFAULT_LIMIT, DEFAULT_THREAD_SIZE, FETCH_ENTITIES_MAX_PARALLEL_JOBS } from "../../utils/config";
 import { PostDto } from "../../core/dtos/PostDto/PostDto";
@@ -22,7 +22,7 @@ export const db_model_apis = (client: Client) => {
         });
         const replies_total_count = replies_total_count_result.rows[0].count;
 
-        const sub_result = await client.query<TablePosts>({
+        const sub_result = await client.query<TablePosts & { media: TableMedia[] }>({
           text: [
             "SELECT posts.*, boards.tag FROM posts",
             moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
@@ -33,6 +33,16 @@ export const db_model_apis = (client: Client) => {
           ].join('\n'),
           values: [thread.id, thread_size],
         });
+
+        for (let rowIndex in sub_result.rows) {
+          const row = sub_result.rows[rowIndex];
+          const medias = await client.query<TableMedia>({
+            text: "SELECT media.* FROM media WHERE media.post_id = $1",
+            values: [row.id],
+          });
+
+          sub_result.rows[rowIndex].media = medias.rows ?? [];
+        }
 
         return [
           thread.id,
@@ -87,7 +97,12 @@ export const db_model_apis = (client: Client) => {
           values: [post_id],
         });
 
-        const post_dto = new PostDto(result.rows[0]);
+        const medias = await client.query<TableMedia>({
+          text: "SELECT media.* FROM media WHERE media.post_id = $1",
+          values: [post_id],
+        });
+
+        const post_dto = new PostDto({ ...result.rows[0], media: medias.rows });
         return post_dto;
       },
     },
@@ -96,7 +111,7 @@ export const db_model_apis = (client: Client) => {
         const board = await apis.boards.get_by_tag(moderated, tag);
         const board_id = board.id;
 
-        const result = await client.query<TablePosts>({
+        const result = await client.query<TablePosts & { media: TableMedia[] }>({
           text: [
             "SELECT posts.*, boards.tag FROM posts",
             moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
@@ -107,6 +122,16 @@ export const db_model_apis = (client: Client) => {
           ].join('\n'),
           values: [board_id, limit, offset],
         });
+
+        for (let rowIndex in result.rows) {
+          const row = result.rows[rowIndex];
+          const medias = await client.query<TableMedia>({
+            text: "SELECT media.* FROM media WHERE media.post_id = $1",
+            values: [row.id],
+          });
+
+          result.rows[rowIndex].media = medias.rows ?? [];
+        }
 
         return await enrich_threads_with_replies(result, moderated, thread_size);
       },
@@ -127,7 +152,7 @@ export const db_model_apis = (client: Client) => {
         return result.rows[0];
       },
       get_by_id: async (moderated: boolean, post_id: number) => {
-        const result = await client.query<TablePosts>({
+        const result = await client.query<TablePosts & { media: TableMedia[] }>({
           text: [
             "SELECT posts.*, boards.tag FROM posts",
             moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
@@ -137,6 +162,17 @@ export const db_model_apis = (client: Client) => {
           ].join('\n'),
           values: [post_id],
         });
+
+        for (let rowIndex in result.rows) {
+          const row = result.rows[rowIndex];
+          const medias = await client.query<TableMedia>({
+            text: "SELECT media.* FROM media WHERE media.post_id = $1",
+            values: [row.id],
+          });
+
+          result.rows[rowIndex].media = medias.rows ?? [];
+        }
+
         // fixme: оч большой limit в данном случае сработает, но надо подумать о решении получше
         const posts = await enrich_threads_with_replies(result, moderated, 1000000);
 
@@ -145,7 +181,7 @@ export const db_model_apis = (client: Client) => {
     },
     feed: {
       get_all: async (moderated: boolean, offset = 0, limit = DEFAULT_LIMIT, thread_size = DEFAULT_THREAD_SIZE) => {
-        const result = await client.query<TablePosts>({
+        const result = await client.query<TablePosts & { media: TableMedia[] }>({
           text: [
             "SELECT posts.*, boards.tag FROM posts",
             moderated ? "LEFT JOIN moderated ON moderated.post_id = posts.id" : "",
@@ -159,6 +195,16 @@ export const db_model_apis = (client: Client) => {
           ].join('\n'),
           values: [limit, offset],
         });
+
+        for (let rowIndex in result.rows) {
+          const row = result.rows[rowIndex];
+          const medias = await client.query<TableMedia>({
+            text: "SELECT media.* FROM media WHERE media.post_id = $1",
+            values: [row.id],
+          });
+
+          result.rows[rowIndex].media = medias.rows ?? [];
+        }
 
         return await enrich_threads_with_replies(result, moderated, thread_size);
       },

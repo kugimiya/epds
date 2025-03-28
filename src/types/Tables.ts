@@ -30,7 +30,7 @@ export enum SettingType {
   Boolean = 2,
   DateString = 3,
   DateTimestamp = 4
-};
+}
 
 export type TableEvents = {
   id: number;
@@ -45,4 +45,18 @@ export enum EventType {
   PostDeleted = 'PostDeleted',
   BoardUpdateTriggered = 'BoardUpdateTriggered',
   ThreadUpdateTriggered = 'ThreadUpdateTriggered',
-};
+}
+
+export enum MediaType {
+  Image = 'image',
+  YouTube = 'youtube',
+  Video = 'video',
+}
+
+export type TableMedia = {
+  id: number;
+  post_id: number;
+  media_type: MediaType;
+  thumbnail_path: string;
+  original_path: string;
+}

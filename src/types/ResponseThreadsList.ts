@@ -21,9 +21,10 @@ export type ResponsePost = {
   replies: ResponsePost[];
   replies_count: number;
   is_verify: boolean;
-  media: {
-    images: ResponseMedia[];
-    youtube: ResponseMedia[];
+  media?: {
+    images?: ResponseMedia[];
+    youtube?: ResponseMedia[];
+    videos?: ResponseMedia[];
   };
 };
 
