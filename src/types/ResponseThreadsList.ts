@@ -23,7 +23,7 @@ export type ResponsePost = {
   is_verify: boolean;
   media?: {
     images?: ResponseMedia[];
-    youtube?: ResponseMedia[];
+    youtubes?: ResponseMedia[];
     videos?: ResponseMedia[];
   };
 };

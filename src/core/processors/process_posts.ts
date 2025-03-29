@@ -34,8 +34,8 @@ export const process_posts = async (posts: ResponsePost[], db: Awaited<ReturnTyp
       }
     }
 
-    if (post.media?.youtube?.length) {
-      for (let image of post.media.youtube) {
+    if (post.media?.youtubes?.length) {
+      for (let image of post.media.youtubes) {
         media_checked += 1;
         await db.media.insert(image, post.id, MediaType.YouTube);
       }
